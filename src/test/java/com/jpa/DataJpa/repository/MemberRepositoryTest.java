@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -126,6 +127,27 @@ public class MemberRepositoryTest {
         for (Member byName : byNames) {
             System.out.println("byName = " + byName);
         }
+    }
 
+    @Test
+    public void returnType() {
+        Member m1 = new Member("AAA", 10);
+        Member m2 = new Member("BBB", 20);
+
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+//        List<Member> listResult = memberRepository.findListByUsername("AAA");
+//        만약 입력한 유저네임과 맞는 Member가 찾아지지 않는다면 자동으로 result는 0으로 초기화 된다 if(result != null) 이런 조건문은 절대 쓰지 않도록 하자
+
+        Optional<Member> optionalResult = memberRepository.findOptionalByUsername("CCC");
+        System.out.println("optionalResult.get() = " + optionalResult.get());
+        // Optional 로 감싸준다면 반환값이 없을때 NoSuchElementException을 터뜨린다.
+        // 반환값이 두개 이상이여도 안된다 NonUniqueResultException
+
+//        Member memberResult = memberRepository.findMemberByUsername("AAA");
+//        단건 조회도 마찬가지로 없는 유저네임으로 쿼리를 날려 find된게 없다 하면, null이 반환된다 지금 같은경우는 memberResult = null이다.
+
+//        .SingleResult로 조회시 반환값이 없으면 NoResultException이 터진다.
     }
 }
