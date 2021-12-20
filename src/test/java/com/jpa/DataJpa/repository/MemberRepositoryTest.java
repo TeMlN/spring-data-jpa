@@ -13,6 +13,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +30,8 @@ public class MemberRepositoryTest {
     MemberRepository memberRepository;
     @Autowired
     TeamRepository teamRepository;
+    @PersistenceContext
+    EntityManager em;
 
     @Test
     public void testMember() {
@@ -184,5 +188,29 @@ public class MemberRepositoryTest {
         assertThat(page.getTotalPages()).isEqualTo(2);
         assertThat(page.isFirst()).isTrue();
         assertThat(page.hasNext()).isTrue();
+    }
+
+    @Test
+    public void bulkUpdate() {
+        //given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 19));
+        memberRepository.save(new Member("member3", 20));
+        memberRepository.save(new Member("member4", 21));
+        memberRepository.save(new Member("member5", 40));
+
+        //when
+        int resultCount = memberRepository.bulkAgePlus(20);
+
+        //벌크성 수정쿼리는 영속성 컨텍스트를 반영하지 않고 db에서 강제로 flush 하기 때문에 em.clear를 통해 영속성 컨텍스트를 날리면서 db와 동기화 하여야한다.
+        em.clear();
+
+        List<Member> result = memberRepository.findByUsername("member5");
+        Member member = result.get(0);
+
+        System.out.println("member = " + member);
+
+        //then
+        assertThat(resultCount).isEqualTo(3);
     }
 }

@@ -5,6 +5,7 @@ import com.jpa.DataJpa.model.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -13,6 +14,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
+
+    List<Member> findByUsername(String username);
 
     List<Member> findByUsernameAndAgeGreaterThan(String username, int age);
 
@@ -34,5 +37,9 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     @Query(value = "select m from Member m", countQuery = "select count(m.username) from Member m")
     Page<Member> findByAge(int age, Pageable pageable);
+
+    @Modifying // ExecuteUpdate 의 역할임, clearAutomatically = true로 옵션을 주면 em.clear와 같은 기능을 할 수 있다.
+    @Query("update Member m set m.age = m.age + 1 where m.age >= :age")
+    int bulkAgePlus(@Param("age") int age);
 
 }
