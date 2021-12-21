@@ -238,4 +238,35 @@ public class MemberRepositoryTest {
             System.out.println("member.getTeam().getName() = " + member.getTeam().getName());
         }
     }
+
+    @Test
+    public void queryHint() {
+
+        //given
+        Member member = memberRepository.save(new Member("member1", 10));
+        em.flush();
+        em.clear();
+
+        //when
+        Member findMember = memberRepository.findReadOnlyByUsername("member1"); //변경감지 작동을 안함, 애초에 snapshot 이 존재하지 않음
+        //복잡한 조회쿼리가 나가는게 성능이 안좋은거지, readyOnly (QueryHint)로 조회쿼리를 최적화 시켜도 그 차이는 미미하다
+        findMember.setUsername("member2");
+
+        em.flush();
+
+    }
+
+    @Test
+    public void lock() {
+
+        //given
+        Member member = memberRepository.save(new Member("member1", 10));
+        em.flush();
+        em.clear();
+
+        //when
+        List<Member> result = memberRepository.findLockByUsername("member1");
+
+        em.flush();
+    }
 }
